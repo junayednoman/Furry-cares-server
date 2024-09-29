@@ -2,6 +2,7 @@ import { model, Schema } from "mongoose";
 import { defaultProfileImage } from "../../constant";
 import { TUserModel, TUser } from "./auth.interface";
 import bcrypt from 'bcrypt'
+import config from "../../config";
 
 const userSchema = new Schema<TUser, TUserModel>(
     {
@@ -21,8 +22,9 @@ const userSchema = new Schema<TUser, TUserModel>(
 )
 
 
+// encrypt the password
 userSchema.pre('save', async function (next) {
-    const password = await bcrypt.hash(this.password, 10)
+    const password = await bcrypt.hash(this.password, Number(config.salt_rounds!))
     this.password = password
     next()
 });
