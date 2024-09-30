@@ -14,6 +14,22 @@ const createPostIntoDb = async (post: TPost) => {
   return newPost;
 };
 
+const getAllPostFromDb = async () => {
+  const postFromDb = await PostModel.find().populate('author')
+
+  return postFromDb
+}
+
+const getSinglePostFromDb = async (id: string) => {
+  const postFromDb = await PostModel.findById(id).populate('author')
+  if (!postFromDb) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Invalid post ID')
+  }
+  return postFromDb
+}
+
 export const postServices = {
-  createPostIntoDb
+  createPostIntoDb,
+  getAllPostFromDb,
+  getSinglePostFromDb
 }

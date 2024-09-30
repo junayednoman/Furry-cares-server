@@ -16,4 +16,11 @@ router.post('/',
   handleZodValidation(postValidationSchema),
   postControllers.createPost)
 
+router.get('/',
+  authGuard(['admin', 'user']),
+  postControllers.getAllPosts)
+
+router.get('/:id',
+  postControllers.getPostById)
+
 export const postRouter = router;
