@@ -9,3 +9,10 @@ export type TErrorResponse = {
     errorSource: TErrorSources;
     stack: string;
 }
+
+export type TJwtPayload = {
+    _id: string;
+    name: string;
+    email: string;
+    role: 'user' | 'admin';
+}

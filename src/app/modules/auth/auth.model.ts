@@ -24,8 +24,8 @@ const userSchema = new Schema<TUser, TUserModel>(
 
 // encrypt the password
 userSchema.pre('save', async function (next) {
-    const password = await bcrypt.hash(this.password, Number(config.salt_rounds!))
-    this.password = password
+    const hashedPassword = await bcrypt.hash(this.password, Number(config.salt_rounds!))
+    this.password = hashedPassword
     next()
 });
 

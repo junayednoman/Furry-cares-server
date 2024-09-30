@@ -5,6 +5,8 @@ import { UserModel } from "./auth.model"
 import httpStatus from "http-status"
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
+import { sendEmail } from "../../utils/sendEmail"
+import { TJwtPayload } from "../../interface/global"
 
 //  Creates a user in the database.
 const createUserIntoDb = async (payload: TUser) => {
@@ -60,7 +62,61 @@ const loginUser = async (payload: Pick<TUser, "email" | "password" | "isDeleted"
     }
 }
 
+// forget password
+const forgetPassword = async (payload: Pick<TUser, "email">) => {
+    const user = await UserModel.isUserExist(payload.email);
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "No user found with the email!")
+    }
+    if (user.isDeleted) {
+        throw new AppError(httpStatus.MOVED_PERMANENTLY, "User is deleted!")
+    }
+
+    // generate token
+    const jwtPayload = {
+        _id: user._id as string,
+        email: user.email,
+        role: user.role
+    }
+    const resetToken = jwt.sign(jwtPayload, config.jwt_access_secret!, { expiresIn: '10m' });
+
+    const resetUrl = `${config.reset_password_ui_link}${payload.email}&token=${resetToken}`
+
+    // send email with reset url
+    sendEmail(user.email, 'Reset Your Password - Furry Tales', `We received a request to reset your password for your Furry Tales account. Please click the link below to choose a new password: ${resetUrl}`)
+    return {
+        resetUrl
+    }
+}
+
+// reset password
+const resetPassword = async (payload: { email: string, newPassword: string }, token: string) => {
+    const user = await UserModel.isUserExist(payload.email);
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "No user found with the email!")
+    }
+    if (user.isDeleted) {
+        throw new AppError(httpStatus.MOVED_PERMANENTLY, "User is deleted!")
+    }
+
+    // verify token
+    const decoded = jwt.verify(token, config.jwt_access_secret as string) as TJwtPayload
+    if (payload.email !== decoded.email) {
+        throw new AppError(httpStatus.FORBIDDEN, "Forbidden")
+    }
+
+    const newHashedPass = await bcrypt.hash(payload.newPassword, Number(config.salt_rounds!))
+
+    const result = await UserModel.findOneAndUpdate({ email: payload.email }, { password: newHashedPass })
+
+    return {
+        result
+    }
+}
+
 export const authServices = {
     createUserIntoDb,
-    loginUser
+    loginUser,
+    forgetPassword,
+    resetPassword
 }
