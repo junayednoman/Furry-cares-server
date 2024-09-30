@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
- 
+
 /* eslint-disable no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from "express"
@@ -86,4 +86,4 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
     stack: config.node_env === 'development' && err?.stack
   })
 }
-export default globalErrorHandler
+export default globalErrorHandler;

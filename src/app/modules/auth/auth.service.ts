@@ -10,8 +10,9 @@ import { TJwtPayload } from "../../interface/global"
 
 //  Creates a user in the database.
 const createUserIntoDb = async (payload: TUser) => {
-    if (await UserModel.isUserExist(payload.email)) {
-        throw new AppError(httpStatus.CONFLICT, "User already exists!")
+    const existedUser = await UserModel.findOne({ email: payload.email })
+    if (existedUser) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User already exists")
     }
 
     const newUser = await UserModel.create(payload)

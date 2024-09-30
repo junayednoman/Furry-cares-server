@@ -1,6 +1,7 @@
 import { AppError } from "../../error/appError";
 import handleAsyncRequest from "../../utils/handleAsyncRequest";
 import { successResponse } from "../../utils/successResponse";
+import PostModel from "./post.model";
 import { postServices } from "./post.service";
 
 const createPost = handleAsyncRequest(async (req, res) => {
@@ -9,7 +10,7 @@ const createPost = handleAsyncRequest(async (req, res) => {
   }
   const bodyData = req.body
   const postData = {
-    thumbnail: req.file?.path,
+    thumbnail: req?.file?.path,
     ...bodyData
   }
 
@@ -33,8 +34,40 @@ const getPostById = handleAsyncRequest(async (req, res) => {
   })
 })
 
+const updateSinglePost = handleAsyncRequest(async (req, res) => {
+  const bodyData = req.body
+  let thumbnail
+  const oldPost = await PostModel.findById(req.params.id)
+  if (req.file) {
+    thumbnail = req.file?.path
+  } else {
+    thumbnail = oldPost?.thumbnail
+  }
+  const postData = {
+    thumbnail,
+    ...bodyData
+  }
+
+  const retrievedToken = req.headers.authorization
+  const token = retrievedToken?.split('Bearer, ')[1]
+
+  const result = await postServices.updateSinglePost(req.params.id, postData, token!)
+  successResponse((res), {
+    message: "Post updated successfully!", data: result,
+  })
+})
+
+const updatePostVote = handleAsyncRequest(async (req, res) => {
+  const result = await postServices.updatePostVote(req.params.id, req.body.vote)
+  successResponse((res), {
+    message: "Post vote updated successfully!", data: result,
+  })
+})
+
 export const postControllers = {
   createPost,
   getAllPosts,
-  getPostById
+  getPostById,
+  updateSinglePost,
+  updatePostVote
 }

@@ -3,12 +3,18 @@ export const postValidationSchema = z.object({
   author: string(),
   title: string().min(1, { message: 'Title is required' }),
   content: string().min(1, { message: 'Content is required' }),
-  images: array(string()).optional(),
   category: z.enum(['tip', 'story']),
   tags: array(string().min(1)).nonempty({ message: 'At least one tag is required' }),
   isPremium: boolean().optional().default(false),
-  votes: number().optional().default(0),
-  comments: array(string()).optional(),
+})
+
+export const postUpdateValidationSchema = z.object({
+  title: string().optional(),
+  content: string().optional(),
+  category: z.enum(['tip', 'story']).optional(),
+  tags: array(string()).optional(),
+  isPremium: boolean().optional(),
+  votes: number().optional(),
 })
 
 
@@ -39,3 +45,23 @@ export const ImageFileZodSchema = z.object({
     filename: string(),
   })
 });
+export const ImageFileUpdateZodSchema = z.object({
+  file: z.object({
+    fieldname: string(),
+    originalname: string(),
+    encoding: string(),
+    mimetype: z.enum(ACCEPTED_FILE_TYPES),
+    path: string(),
+    size: z
+      .number()
+      .refine(
+        (size) => size <= MAX_UPLOAD_SIZE,
+        'File size must be less than 3MB'
+      ),
+    filename: string(),
+  }).optional(),
+});
+
+export const voteValidationSchema = z.object({
+  vote: z.enum(['upvote', 'downvote'], { required_error: 'Vote is required' }),
+})

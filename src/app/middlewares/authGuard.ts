@@ -10,8 +10,8 @@ import jwt from "jsonwebtoken"
 
 const authGuard = (allowedRules: TUserRole[]) => handleAsyncRequest(
   async (req: Request, res: Response, next: NextFunction) => {
-    const authToken = req.headers.authorization
-    const token = authToken?.split('Bearer, ')[1]
+    const retrievedToken = req.headers.authorization
+    const token = retrievedToken?.split('Bearer, ')[1]
 
     // verify token
     const decoded = jwt.verify(token!, config.jwt_access_secret as string) as TJwtPayload
