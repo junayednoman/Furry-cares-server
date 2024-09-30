@@ -13,8 +13,11 @@ export type TUser = {
   following: ObjectId[];
   createdAt: Date;
   updatedAt: Date;
-  isDeleted: boolean
+  isDeleted: boolean;
+  passResetToken?: string
 }
+
+export type TUserRole = 'user' | 'admin'
 
 export interface TUserModel extends Model<TUser> {
   // eslint-disable-next-line no-unused-vars

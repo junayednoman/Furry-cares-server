@@ -1,32 +1,41 @@
 import { Router } from "express";
 import { authControllers } from "./auth.controller";
 import { ForgetPasswordValidationSchema, ResetPasswordValidationSchema, UserLoginValidationSchema, UserUpdateValidationSchema, UserValidationSchema } from "./auth.validation";
-import { handleMiddleware } from "../../middlewares/handleMiddleware";
+import authGuard from "../../middlewares/authGuard";
+import { handleZodValidation } from "../../middlewares/handleZodValidation";
 
 
 const router = Router()
 
 router.post('/register',
-    handleMiddleware(UserValidationSchema),
+    handleZodValidation(UserValidationSchema),
     authControllers.createUser)
 
 router.post('/login',
-    handleMiddleware(UserLoginValidationSchema),
+    handleZodValidation(UserLoginValidationSchema),
     authControllers.loginUser)
 
 router.post('/forget-password',
-    handleMiddleware(ForgetPasswordValidationSchema),
+    handleZodValidation(ForgetPasswordValidationSchema),
     authControllers.forgetPassword)
 
 router.post('/reset-password',
-    handleMiddleware(ResetPasswordValidationSchema),
+    handleZodValidation(ResetPasswordValidationSchema),
     authControllers.resetPassword)
 
 router.get('/profile',
     authControllers.getOwnProfile)
 
 router.put('/update-profile',
-    handleMiddleware(UserUpdateValidationSchema),
+    authGuard(['admin', 'user']),
+    handleZodValidation(UserUpdateValidationSchema),
     authControllers.updateProfile)
 
-export const authRoutes = router
+router.get('/get-access-token',
+    authControllers.getNewAccessToken)
+
+router.get('/',
+    authGuard(['admin']),
+    authControllers.getAllUsers)
+
+export const authRouter = router

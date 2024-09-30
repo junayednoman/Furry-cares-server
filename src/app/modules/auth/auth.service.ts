@@ -30,18 +30,12 @@ const createUserIntoDb = async (payload: TUser) => {
 }
 
 const loginUser = async (payload: Pick<TUser, "email" | "password" | "isDeleted">) => {
-    const user = await UserModel.isUserExist(payload.email);
-    if (!user) {
-        throw new AppError(httpStatus.NOT_FOUND, "No user found with the email!")
-    }
-    if (user.isDeleted) {
-        throw new AppError(httpStatus.MOVED_PERMANENTLY, "User is deleted!")
-    }
+    const user = await UserModel.isUserExist(payload.email) as TUser;
 
     // check if password match
     const isPasswordMatch = await bcrypt.compare(
         payload?.password,
-        user?.password,
+        user.password,
     );
     if (!isPasswordMatch) {
         throw new AppError(httpStatus.UNAUTHORIZED, "Password is incorrect!")
@@ -64,13 +58,7 @@ const loginUser = async (payload: Pick<TUser, "email" | "password" | "isDeleted"
 
 // forget password
 const forgetPassword = async (payload: Pick<TUser, "email">) => {
-    const user = await UserModel.isUserExist(payload.email);
-    if (!user) {
-        throw new AppError(httpStatus.NOT_FOUND, "No user found with the email!")
-    }
-    if (user.isDeleted) {
-        throw new AppError(httpStatus.MOVED_PERMANENTLY, "User is deleted!")
-    }
+    const user = await UserModel.isUserExist(payload.email) as TUser;
 
     // generate token
     const jwtPayload = {
@@ -83,6 +71,12 @@ const forgetPassword = async (payload: Pick<TUser, "email">) => {
 
     const resetUrl = `${config.reset_password_ui_link}${payload.email}&token=${resetToken}`
 
+    await UserModel.findByIdAndUpdate(user._id, {
+        $set: {
+            passResetToken: resetToken
+        }
+    })
+
     // send email with reset url
     sendEmail(user.email, 'Reset Your Password - Furry Tales', `We received a request to reset your password for your Furry Tales account. Please click the link below to choose a new password: ${resetUrl}`)
     return {
@@ -92,23 +86,22 @@ const forgetPassword = async (payload: Pick<TUser, "email">) => {
 
 // reset password
 const resetPassword = async (payload: { email: string, newPassword: string }, token: string) => {
-    const user = await UserModel.isUserExist(payload.email);
-    if (!user) {
-        throw new AppError(httpStatus.NOT_FOUND, "No user found with the email!")
-    }
-    if (user.isDeleted) {
-        throw new AppError(httpStatus.MOVED_PERMANENTLY, "User is deleted!")
-    }
 
     // verify token
-    const decoded = jwt.verify(token, config.jwt_access_secret as string) as TJwtPayload
-    if (payload.email !== decoded.email) {
+    const decoded = jwt.verify(token!, config.jwt_access_secret as string) as TJwtPayload
+    const user = await UserModel.isUserExist(decoded.email) as TUser
+
+    if (user.role !== decoded.role) {
         throw new AppError(httpStatus.FORBIDDEN, "Forbidden")
+    }
+
+    if (token !== user.passResetToken) {
+        throw new AppError(httpStatus.FORBIDDEN, "Forbiddens")
     }
 
     const newHashedPass = await bcrypt.hash(payload.newPassword, Number(config.salt_rounds!))
 
-    const result = await UserModel.findOneAndUpdate({ email: payload.email }, { password: newHashedPass })
+    const result = await UserModel.findOneAndUpdate({ email: payload.email }, { password: newHashedPass, passResetToken: '' })
 
     return {
         result
@@ -119,21 +112,24 @@ const resetPassword = async (payload: { email: string, newPassword: string }, to
 const getOwnProfile = async (token: string) => {
     // verify token
     const decoded = jwt.verify(token, config.jwt_access_secret as string) as TJwtPayload
-    const user = UserModel.isUserExist(decoded.email)
-
-    if (!user) {
-        throw new AppError(httpStatus.NOT_FOUND, "User not found!")
-    }
-
-    if (user.isDeleted) {
-        throw new AppError(httpStatus.MOVED_PERMANENTLY, "User is deleted")
-    }
+    const user = UserModel.isUserExist(decoded.email) as TUser
 
     return user
 }
 
 // update profile
-const updateProfile = async (token: string, payload: Partial<TUser>) => {
+const updateProfile = async (payload: Partial<TUser>) => {
+    const result = await UserModel.findByIdAndUpdate(payload._id, {
+        $set: { ...payload }
+    }, { new: true })
+
+    return result
+}
+
+
+// get new accessTOken
+const getNewAccessToken = async (token: string) => {
+
     // verify token
     const decoded = jwt.verify(token, config.jwt_access_secret as string) as TJwtPayload
     const user = await UserModel.isUserExist(decoded.email)
@@ -146,12 +142,23 @@ const updateProfile = async (token: string, payload: Partial<TUser>) => {
         throw new AppError(httpStatus.MOVED_PERMANENTLY, "User is deleted")
     }
 
-    const result = await UserModel.findByIdAndUpdate(user._id, {
-        $set: { ...payload }
-    }, { new: true })
-    console.log('log, ', result);
+    const jwtPayload = {
+        _id: user._id as string,
+        name: user.name,
+        email: user.email,
+        role: user.role
+    }
+    const accessToken = jwt.sign(jwtPayload, config.jwt_access_secret!, { expiresIn: config.jwt_access_expires_in });
 
-    return result
+
+    return { accessToken }
+}
+
+
+// get all  users
+const getAllUsers = async () => {
+    const users = await UserModel.find()
+    return users
 }
 
 export const authServices = {
@@ -160,5 +167,7 @@ export const authServices = {
     forgetPassword,
     resetPassword,
     getOwnProfile,
-    updateProfile
+    updateProfile,
+    getNewAccessToken,
+    getAllUsers
 }
