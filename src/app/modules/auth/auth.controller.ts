@@ -35,10 +35,32 @@ const forgetPassword = handleAsyncRequest(async (req, res) => {
 })
 
 const resetPassword = handleAsyncRequest(async (req, res) => {
-    const token = req.headers.authorization
+    const authToken = req.headers.authorization
+    const token = authToken?.split('Bearer, ')[1]
     const result = await authServices.resetPassword(req.body, token!)
+
     successResponse((res), {
         message: "Password reset successfully!", data: result,
+    })
+})
+
+const getOwnProfile = handleAsyncRequest(async (req, res) => {
+    const authToken = req.headers.authorization
+    const token = authToken?.split('Bearer, ')[1]
+
+    const result = await authServices.getOwnProfile(token!)
+    successResponse((res), {
+        message: "Profile retrieved successfully!", data: result,
+    })
+})
+
+const updateProfile = handleAsyncRequest(async (req, res) => {
+    const authToken = req.headers.authorization
+    const token = authToken?.split('Bearer, ')[1]
+
+    const result = await authServices.updateProfile(token!, req.body)
+    successResponse((res), {
+        message: "Profile updated successfully!", data: result,
     })
 })
 
@@ -46,5 +68,7 @@ export const authControllers = {
     createUser,
     loginUser,
     forgetPassword,
-    resetPassword
+    resetPassword,
+    getOwnProfile,
+    updateProfile
 }

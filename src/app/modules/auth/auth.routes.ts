@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authControllers } from "./auth.controller";
-import { ForgetPasswordValidationSchema, ResetPasswordValidationSchema, UserLoginValidationSchema, UserValidationSchema } from "./auth.validation";
+import { ForgetPasswordValidationSchema, ResetPasswordValidationSchema, UserLoginValidationSchema, UserUpdateValidationSchema, UserValidationSchema } from "./auth.validation";
 import { handleMiddleware } from "../../middlewares/handleMiddleware";
 
 
@@ -21,5 +21,12 @@ router.post('/forget-password',
 router.post('/reset-password',
     handleMiddleware(ResetPasswordValidationSchema),
     authControllers.resetPassword)
+
+router.get('/profile',
+    authControllers.getOwnProfile)
+
+router.put('/update-profile',
+    handleMiddleware(UserUpdateValidationSchema),
+    authControllers.updateProfile)
 
 export const authRoutes = router

@@ -78,6 +78,7 @@ const forgetPassword = async (payload: Pick<TUser, "email">) => {
         email: user.email,
         role: user.role
     }
+
     const resetToken = jwt.sign(jwtPayload, config.jwt_access_secret!, { expiresIn: '10m' });
 
     const resetUrl = `${config.reset_password_ui_link}${payload.email}&token=${resetToken}`
@@ -114,9 +115,50 @@ const resetPassword = async (payload: { email: string, newPassword: string }, to
     }
 }
 
+// get own profile
+const getOwnProfile = async (token: string) => {
+    // verify token
+    const decoded = jwt.verify(token, config.jwt_access_secret as string) as TJwtPayload
+    const user = UserModel.isUserExist(decoded.email)
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "User not found!")
+    }
+
+    if (user.isDeleted) {
+        throw new AppError(httpStatus.MOVED_PERMANENTLY, "User is deleted")
+    }
+
+    return user
+}
+
+// update profile
+const updateProfile = async (token: string, payload: Partial<TUser>) => {
+    // verify token
+    const decoded = jwt.verify(token, config.jwt_access_secret as string) as TJwtPayload
+    const user = await UserModel.isUserExist(decoded.email)
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "User not found!")
+    }
+
+    if (user.isDeleted) {
+        throw new AppError(httpStatus.MOVED_PERMANENTLY, "User is deleted")
+    }
+
+    const result = await UserModel.findByIdAndUpdate(user._id, {
+        $set: { ...payload }
+    }, { new: true })
+    console.log('log, ', result);
+
+    return result
+}
+
 export const authServices = {
     createUserIntoDb,
     loginUser,
     forgetPassword,
-    resetPassword
+    resetPassword,
+    getOwnProfile,
+    updateProfile
 }

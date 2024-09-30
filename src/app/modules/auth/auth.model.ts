@@ -1,5 +1,5 @@
 import { model, Schema } from "mongoose";
-import { defaultProfileImage } from "../../constant";
+import { defaultCoverImage, defaultProfileImage } from "../../constant";
 import { TUserModel, TUser } from "./auth.interface";
 import bcrypt from 'bcrypt'
 import config from "../../config";
@@ -10,6 +10,7 @@ const userSchema = new Schema<TUser, TUserModel>(
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
         bio: { type: String, },
+        coverPhoto: { type: String, default: defaultCoverImage },
         profilePicture: { type: String, default: defaultProfileImage },
         role: { type: String, enum: ['user', 'admin'], default: 'user' },
         followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],

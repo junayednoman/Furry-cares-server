@@ -6,6 +6,7 @@ export type TUser = {
   email: string;
   password: string;
   bio?: string;
+  coverPhoto?: string;
   profilePicture?: string;
   role: 'user' | 'admin';
   followers: ObjectId[];

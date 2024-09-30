@@ -1,2 +1,3 @@
 export const defaultImage = 'https://img.freepik.com/free-photo/image-icon-front-side-with-white-background_187299-39874.jpg?t=st=1727575434~exp=1727579034~hmac=eec822bf30c1ff5e5be298aa8291f9ec42c2bf2921a56ce70b948936de956fac&w=740'
 export const defaultProfileImage = 'https://static.vecteezy.com/system/resources/previews/006/487/917/original/man-avatar-icon-free-vector.jpg'
+export const defaultCoverImage = 'https://static.spacecrafted.com/a7396ee5481b4f909a919d4d9b12438c/i/fb8d760141e741eab1385d7d1e49585f/1/GCuCv726gZycFxatRCb7iU/1200-x-720%20Placeholder%20Image.jpg'
