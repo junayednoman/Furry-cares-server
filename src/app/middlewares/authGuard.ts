@@ -28,6 +28,12 @@ const authGuard = (allowedRules: TUserRole[]) => handleAsyncRequest(
     if (user.role !== decoded.role || !allowedRules.includes(user.role)) {
       throw new AppError(httpStatus.FORBIDDEN, "Forbidden")
     }
+
+    const userId = req?.params?.userId
+    if (userId && user._id.toString() !== userId) {
+      throw new AppError(httpStatus.FORBIDDEN, "Forbidden")
+    }
+
     next()
   }
 )

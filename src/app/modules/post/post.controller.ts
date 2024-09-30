@@ -64,10 +64,28 @@ const updatePostVote = handleAsyncRequest(async (req, res) => {
   })
 })
 
+const deletePost = handleAsyncRequest(async (req, res) => {
+  const retrievedToken = req.headers.authorization
+  const token = retrievedToken?.split('Bearer, ')[1]
+  const result = await postServices.deletePost(req.params.id, token!)
+  successResponse((res), {
+    message: "Post deleted successfully!", data: result,
+  })
+})
+
+const getPostByUser = handleAsyncRequest(async (req, res) => {
+  const result = await postServices.getPostByUser(req.params.userId)
+  successResponse((res), {
+    message: "Post retrieved successfully!", data: result,
+  })
+})
+
 export const postControllers = {
   createPost,
   getAllPosts,
   getPostById,
   updateSinglePost,
-  updatePostVote
+  updatePostVote,
+  deletePost,
+  getPostByUser
 }

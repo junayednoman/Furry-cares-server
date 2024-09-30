@@ -35,4 +35,12 @@ router.patch('/vote/:id',
   handleZodValidation(voteValidationSchema),
   postControllers.updatePostVote)
 
+router.delete('/:id',
+  authGuard(['admin', 'user']),
+  postControllers.deletePost)
+
+router.get('/user/:userId',
+  authGuard(['admin', 'user']),
+  postControllers.getPostByUser)
+
 export const postRouter = router;

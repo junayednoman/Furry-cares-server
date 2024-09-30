@@ -30,6 +30,7 @@ const getSinglePostFromDb = async (id: string) => {
   return postFromDb
 }
 
+// update post
 const updateSinglePost = async (id: string, payload: TPost, token: string) => {
   // verify the user
   const decoded = jwt.verify(token!, config.jwt_access_secret as string) as TJwtPayload
@@ -52,6 +53,7 @@ const updateSinglePost = async (id: string, payload: TPost, token: string) => {
   return updatedPost
 }
 
+// update post's vote
 const updatePostVote = async (id: string, vote: string) => {
   // check if the update request is from the author
   const postFromDb = await PostModel.findOne({ _id: id, isDeleted: false })
@@ -69,9 +71,42 @@ const updatePostVote = async (id: string, vote: string) => {
 
   const updatedPostVote = await PostModel.findByIdAndUpdate(id, { votes: totalVotes }, { new: true })
   if (!updatedPostVote) {
-    throw new Error('Unable to update the post!')
+    throw new Error("Unable to update the post's vote!")
   }
   return updatedPostVote;
+}
+
+// delete post
+const deletePost = async (id: string, token: string) => {
+  // check if the update request is from the author
+  const postFromDb = await PostModel.findOne({ _id: id, isDeleted: false })
+
+  if (!postFromDb) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Invalid post ID')
+  }
+
+  // verify the user
+  const decoded = jwt.verify(token!, config.jwt_access_secret as string) as TJwtPayload
+
+  if (postFromDb?.author?.toString() !== decoded._id) {
+    throw new AppError(httpStatus.FORBIDDEN, 'Forbidden')
+  }
+
+  const deletePost = await PostModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true })
+  if (!deletePost) {
+    throw new Error('Unable to delete the post!')
+  }
+  return deletePost
+}
+
+// get user specific post
+const getPostByUser = async (userId: string) => {
+  const user = await UserModel.findById(userId)
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Invalid user ID')
+  }
+  const postsFromDb = await PostModel.find({ author: userId, isDeleted: false })
+  return postsFromDb
 }
 
 export const postServices = {
@@ -79,6 +114,8 @@ export const postServices = {
   getAllPostFromDb,
   getSinglePostFromDb,
   updateSinglePost,
-  updatePostVote
+  updatePostVote,
+  deletePost,
+  getPostByUser
 }
 
