@@ -86,23 +86,22 @@ const forgetPassword = async (payload: Pick<TUser, "email">) => {
 }
 
 // reset password
-const resetPassword = async (payload: { email: string, newPassword: string }, token: string) => {
+const resetPassword = async (payload: { newPassword: string }, token: string) => {
 
     // verify token
     const decoded = jwt.verify(token!, config.jwt_access_secret as string) as TJwtPayload
     const user = await UserModel.isUserExist(decoded.email) as TUser
-
     if (user.role !== decoded.role) {
         throw new AppError(httpStatus.FORBIDDEN, "Forbidden")
     }
 
-    if (token !== user.passResetToken) {
-        throw new AppError(httpStatus.FORBIDDEN, "Forbiddens")
+    if (user?.passResetToken && token !== user.passResetToken) {
+        throw new AppError(httpStatus.FORBIDDEN, "Forbidden")
     }
 
     const newHashedPass = await bcrypt.hash(payload.newPassword, Number(config.salt_rounds!))
 
-    const result = await UserModel.findOneAndUpdate({ email: payload.email }, { password: newHashedPass, passwordChangedAt: new Date(), $unset: { passResetToken: 1 }, })
+    const result = await UserModel.findOneAndUpdate({ email: user.email }, { password: newHashedPass, passwordChangedAt: new Date(), $unset: { passResetToken: 1 }, })
 
     return {
         result

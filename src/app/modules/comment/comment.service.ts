@@ -4,10 +4,8 @@ import { TComment } from "./comment.interface";
 import CommentModel from "./comment.model";
 import { UserModel } from "../auth/auth.model";
 import PostModel from "../post/post.model";
-import config from "../../config";
-import { TJwtPayload } from "../../interface/global";
-import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import { verifyAuthority } from "../../utils/verifyAuthority";
 
 // create comment into database
 const createCommentIntoDb = async (comment: TComment, token: string) => {
@@ -21,12 +19,8 @@ const createCommentIntoDb = async (comment: TComment, token: string) => {
     if (!user) {
       throw new AppError(httpStatus.NOT_FOUND, "Invalid commenter ID");
     }
-    // verify the user
-    const decoded = jwt.verify(token!, config.jwt_access_secret as string) as TJwtPayload
 
-    if (comment?.commenter?.toString() !== decoded._id) {
-      throw new AppError(httpStatus.FORBIDDEN, 'Forbidden')
-    }
+    verifyAuthority(comment?.commenter?.toString(), token)
 
     const post = await PostModel.findOne({ _id: comment.post, isDeleted: false });
     if (!post) {
@@ -44,11 +38,55 @@ const createCommentIntoDb = async (comment: TComment, token: string) => {
   } finally {
     session.endSession();
   }
-
-  // check if it throws error after jwt expiring in case of not using the try catch method in the jwt verification
-
 }
 
+const updateComment = async (id: string, comment: TComment, token: string) => {
+
+  // check if the update request is from the author
+  const commentFromDb = await CommentModel.findOne({ _id: id });
+
+  if (!commentFromDb) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Invalid comment ID')
+  }
+
+  verifyAuthority(commentFromDb?.commenter?.toString(), token)
+
+  const updatedComment = await CommentModel.findByIdAndUpdate(id, comment, { new: true })
+  if (!updatedComment) {
+    throw new Error('Unable to update the comment!')
+  }
+  return updatedComment
+}
+
+const deleteComment = async (id: string, token: string) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    // check if the update request is from the author
+    const commentFromDb = await CommentModel.findOne({ _id: id });
+    if (!commentFromDb) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Invalid comment ID')
+    }
+
+    verifyAuthority(commentFromDb?.commenter?.toString(), token)
+
+    const deleteComment = await CommentModel.findOneAndDelete({ _id: id }, { session })
+
+    await PostModel.findByIdAndUpdate(commentFromDb?.post, { $pull: { comments: commentFromDb?._id } }, { new: true, session },);
+
+    session.commitTransaction();
+    return deleteComment
+  } catch (error: any) {
+    session.abortTransaction();
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, error.message || "Failed to delete comment")
+  } finally {
+    session.endSession();
+  }
+}
+
+
 export const commentServices = {
-  createCommentIntoDb
+  createCommentIntoDb,
+  updateComment,
+  deleteComment
 }

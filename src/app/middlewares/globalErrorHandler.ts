@@ -75,6 +75,12 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
       path: '',
       message: err?.message
     }]
+  } else if (err.name === "JsonWebTokenError") {
+    statusCode = 401
+    message = err?.message
+  } else if (err.name === "TokenExpiredError") {
+    statusCode = 401
+    message = err?.message
   }
 
   // ultimate error response
@@ -82,7 +88,7 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
     success: false,
     message,
     errorSource,
-    // err,
+    err,
     stack: config.node_env === 'development' && err?.stack
   })
 }

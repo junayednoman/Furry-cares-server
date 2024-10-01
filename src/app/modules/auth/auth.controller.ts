@@ -28,10 +28,10 @@ const loginUser = handleAsyncRequest(async (req, res) => {
 })
 
 const forgetPassword = handleAsyncRequest(async (req, res) => {
-    await authServices.forgetPassword(req.body)
+    const result = await authServices.forgetPassword(req.body)
     successResponse((res), {
         message: "Reset password token generated!",
-        data: "A reset password link has been sent to your email.",
+        data: result,
     })
 })
 

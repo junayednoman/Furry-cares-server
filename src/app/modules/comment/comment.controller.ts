@@ -14,6 +14,34 @@ const createComment = handleAsyncRequest(
   }
 )
 
+const updateComment = handleAsyncRequest(
+  async (req, res) => {
+    const authToken = req.headers.authorization
+    const token = authToken?.split('Bearer, ')[1]
+    const comment = req.body
+    const commentId = req.params.id
+    const result = await commentServices.updateComment(commentId, comment, token!)
+    successResponse((res), {
+      message: "Comment updated successfully!", data: result,
+    })
+  }
+)
+
+const deleteComment = handleAsyncRequest(
+  async (req, res) => {
+    const authToken = req.headers.authorization
+    const token = authToken?.split('Bearer, ')[1]
+    const commentId = req.params.id
+    const result = await commentServices.deleteComment(commentId, token!)
+    successResponse((res), {
+      message: "Comment deleted successfully!", data: result,
+    })
+  }
+)
+
+
 export const commentControllers = {
-  createComment
+  createComment,
+  updateComment,
+  deleteComment
 }
