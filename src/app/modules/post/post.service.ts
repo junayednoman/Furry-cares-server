@@ -5,6 +5,10 @@ import { TPost } from "./post.interface";
 import PostModel from "./post.model";
 import verifyAccessToken from "../../utils/verifyJWT";
 import { verifyAuthority } from "../../utils/verifyAuthority";
+import QueryBuilder from "../../builder/QueryBuilder";
+
+const searchableFields = ['title', 'description', 'tags',]
+const excludeFieldsForFiltering = ['searchTerm', 'sort', 'limit', 'page', 'fields']
 // create post into database
 const createPostIntoDb = async (post: TPost) => {
   const user = await UserModel.findById(post.author)
@@ -15,10 +19,16 @@ const createPostIntoDb = async (post: TPost) => {
   return newPost;
 };
 
-const getAllPostFromDb = async () => {
-  const postFromDb = await PostModel.find().populate(['author', 'comments'])
+const getAllPostFromDb = async (query: Record<string, unknown>) => {
+  const postQuery = new QueryBuilder(PostModel.find().populate(['author', 'comments']), query)
+    .search(searchableFields)
+    .filter(excludeFieldsForFiltering)
+    .sort()
+    .paginate()
+    .selectFields()
 
-  return postFromDb
+  const result = await postQuery.queryModel
+  return result
 }
 
 const getSinglePostFromDb = async (id: string) => {

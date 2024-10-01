@@ -21,9 +21,9 @@ const createPost = handleAsyncRequest(async (req, res) => {
 })
 
 const getAllPosts = handleAsyncRequest(async (req, res) => {
-  const result = await postServices.getAllPostFromDb()
+  const result = await postServices.getAllPostFromDb(req.query)
   successResponse((res), {
-    message: `${result.length ? 'Posts retrieved successfully!' : 'There are no posts this collection!'}`, data: result,
+    message: 'Posts retrieved successfully!', data: result,
   })
 })
 
