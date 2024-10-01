@@ -102,7 +102,7 @@ const resetPassword = async (payload: { email: string, newPassword: string }, to
 
     const newHashedPass = await bcrypt.hash(payload.newPassword, Number(config.salt_rounds!))
 
-    const result = await UserModel.findOneAndUpdate({ email: payload.email }, { password: newHashedPass, passResetToken: '' })
+    const result = await UserModel.findOneAndUpdate({ email: payload.email }, { password: newHashedPass, passwordChangedAt: new Date(), $unset: { passResetToken: 1 }, })
 
     return {
         result

@@ -14,6 +14,7 @@ export type TUser = {
   createdAt: Date;
   updatedAt: Date;
   isDeleted: boolean;
+  passwordChangedAt?: Date;
   passResetToken?: string
 }
 

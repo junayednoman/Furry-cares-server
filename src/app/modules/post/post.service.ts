@@ -109,6 +109,7 @@ const getPostByUser = async (userId: string) => {
   return postsFromDb
 }
 
+
 export const postServices = {
   createPostIntoDb,
   getAllPostFromDb,
@@ -116,6 +117,6 @@ export const postServices = {
   updateSinglePost,
   updatePostVote,
   deletePost,
-  getPostByUser
+  getPostByUser,
 }
 

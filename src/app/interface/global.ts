@@ -15,4 +15,6 @@ export type TJwtPayload = {
     name: string;
     email: string;
     role: 'user' | 'admin';
+    iat: number;
+    exp: number;
 }
