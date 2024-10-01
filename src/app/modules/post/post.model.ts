@@ -12,6 +12,7 @@ const PostSchema = new Schema({
   votes: { type: Number, default: 0 },
   comments: [{ type: Types.ObjectId, ref: 'Comment' }],
   isDeleted: { type: Boolean, default: false },
+  isPublished: { type: Boolean, default: true },
 }, {
   timestamps: true
 });

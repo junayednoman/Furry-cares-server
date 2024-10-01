@@ -80,6 +80,18 @@ const getPostByUser = handleAsyncRequest(async (req, res) => {
   })
 })
 
+const updatePostPublishStatus = handleAsyncRequest(async (req, res) => {
+  const retrievedToken = req.headers.authorization
+  const token = retrievedToken?.split('Bearer, ')[1]
+  const isPublished = req.body.isPublished
+  const result = await postServices.updatePostPublishStatus(req.params.id, isPublished, token!)
+
+  successResponse((res), {
+    message: `Post ${isPublished ? 'published' : 'unpublished'} successfully!`, data: result,
+  })
+})
+
+
 export const postControllers = {
   createPost,
   getAllPosts,
@@ -87,5 +99,6 @@ export const postControllers = {
   updateSinglePost,
   updatePostVote,
   deletePost,
-  getPostByUser
+  getPostByUser,
+  updatePostPublishStatus
 }

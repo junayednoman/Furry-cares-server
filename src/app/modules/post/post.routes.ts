@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { postControllers } from "./post.controller";
 import authGuard from "../../middlewares/authGuard";
-import { ImageFileUpdateZodSchema, ImageFileZodSchema, postUpdateValidationSchema, postValidationSchema, voteValidationSchema } from "./post.validation";
+import { ImageFileUpdateZodSchema, ImageFileZodSchema, postUpdateValidationSchema, postValidationSchema, updatePostPublishStatus, voteValidationSchema } from "./post.validation";
 import { handleZodValidation } from "../../middlewares/handleZodValidation";
 import { multerUpload } from "../../config/multer.config";
 import { parseBody } from "../../middlewares/bodyParser";
@@ -42,5 +42,11 @@ router.delete('/:id',
 router.get('/user/:userId',
   authGuard(['admin', 'user']),
   postControllers.getPostByUser)
+
+router.patch('/publish/:id',
+  authGuard(['admin', 'user']),
+  handleZodValidation(updatePostPublishStatus),
+  postControllers.updatePostPublishStatus)
+
 
 export const postRouter = router;

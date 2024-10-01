@@ -14,9 +14,7 @@ const authGuard = (allowedRules: TUserRole[]) => handleAsyncRequest(
 
     // verify token
     const decoded = verifyAccessToken(token!)
-
     const user = await UserModel.isUserExist(decoded.email)
-
     if (!user) {
       throw new AppError(httpStatus.FORBIDDEN, "Forbidden")
     }
@@ -30,8 +28,6 @@ const authGuard = (allowedRules: TUserRole[]) => handleAsyncRequest(
     ) {
       throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized !');
     }
-
-
 
     if (user.isDeleted) {
       throw new AppError(httpStatus.MOVED_PERMANENTLY, "This user is deleted")

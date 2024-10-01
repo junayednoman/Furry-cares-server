@@ -6,7 +6,7 @@ import { UserModel } from "../auth/auth.model"
 import mongoose from "mongoose"
 
 const getAllUsers = async () => {
-  const users = await UserModel.find()
+  const users = await UserModel.find().populate(['following', 'followers'])
   return users
 }
 

@@ -4,8 +4,9 @@ import verifyAccessToken from './verifyJWT';
 
 export const verifyAuthority = (idToVerify: string, token: string) => {
   const decoded = verifyAccessToken(token)
-  if (idToVerify !== decoded._id) {
+  if (decoded.role !== "admin" && idToVerify !== decoded._id) {
     throw new AppError(httpStatus.FORBIDDEN, 'Forbidden');
   }
+
   return decoded;
 };

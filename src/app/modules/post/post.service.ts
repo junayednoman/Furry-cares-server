@@ -4,6 +4,7 @@ import { UserModel } from "../auth/auth.model";
 import { TPost } from "./post.interface";
 import PostModel from "./post.model";
 import verifyAccessToken from "../../utils/verifyJWT";
+import { verifyAuthority } from "../../utils/verifyAuthority";
 // create post into database
 const createPostIntoDb = async (post: TPost) => {
   const user = await UserModel.findById(post.author)
@@ -15,7 +16,7 @@ const createPostIntoDb = async (post: TPost) => {
 };
 
 const getAllPostFromDb = async () => {
-  const postFromDb = await PostModel.find().populate('author')
+  const postFromDb = await PostModel.find().populate(['author', 'comments'])
 
   return postFromDb
 }
@@ -84,11 +85,7 @@ const deletePost = async (id: string, token: string) => {
   }
 
   // verify the user
-  const decoded = verifyAccessToken(token)
-
-  if (postFromDb?.author?.toString() !== decoded._id) {
-    throw new AppError(httpStatus.FORBIDDEN, 'Forbidden')
-  }
+  verifyAuthority(postFromDb?.author?.toString(), token)
 
   const deletePost = await PostModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true })
   if (!deletePost) {
@@ -108,6 +105,22 @@ const getPostByUser = async (userId: string) => {
 }
 
 
+// update post publish status
+const updatePostPublishStatus = async (id: string, isPublished: boolean, token: string) => {
+  const postFromDb = await PostModel.findOne({ _id: id, isDeleted: false })
+  if (!postFromDb) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Invalid post ID')
+  }
+
+  verifyAuthority(postFromDb.author.toString(), token)
+  const updatedPost = await PostModel.findByIdAndUpdate(id, { isPublished }, { new: true })
+  if (!updatedPost) {
+    throw new Error('Unable to update the post publish status!')
+  }
+  return updatedPost
+}
+
+
 export const postServices = {
   createPostIntoDb,
   getAllPostFromDb,
@@ -116,5 +129,6 @@ export const postServices = {
   updatePostVote,
   deletePost,
   getPostByUser,
+  updatePostPublishStatus
 }
 

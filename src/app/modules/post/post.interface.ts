@@ -13,4 +13,5 @@ export type TPost = {
   createdAt?: Date;
   updatedAt?: Date;
   isDeleted?: boolean;
+  isPublished: boolean;
 }
