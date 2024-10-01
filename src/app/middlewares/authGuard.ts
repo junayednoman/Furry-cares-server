@@ -1,13 +1,11 @@
 import { NextFunction, Request, Response } from "express"
 import { TUserRole } from "../modules/auth/auth.interface"
 import handleAsyncRequest from "../utils/handleAsyncRequest"
-import config from "../config"
-import { TJwtPayload } from "../interface/global"
 import { UserModel } from "../modules/auth/auth.model"
 import httpStatus from "http-status"
 import { AppError } from "../error/appError"
-import jwt from "jsonwebtoken"
 import isJWTIssuedBeforePasswordChanged from "../utils/isJWTIssuedBeforePasswordChanged"
+import verifyAccessToken from "../utils/verifyJWT"
 
 const authGuard = (allowedRules: TUserRole[]) => handleAsyncRequest(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -15,7 +13,7 @@ const authGuard = (allowedRules: TUserRole[]) => handleAsyncRequest(
     const token = retrievedToken?.split('Bearer, ')[1]
 
     // verify token
-    const decoded = jwt.verify(token!, config.jwt_access_secret as string) as TJwtPayload
+    const decoded = verifyAccessToken(token!)
 
     const user = await UserModel.isUserExist(decoded.email)
 

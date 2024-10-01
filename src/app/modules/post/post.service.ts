@@ -3,9 +3,7 @@ import { AppError } from "../../error/appError";
 import { UserModel } from "../auth/auth.model";
 import { TPost } from "./post.interface";
 import PostModel from "./post.model";
-import config from "../../config";
-import { TJwtPayload } from "../../interface/global";
-import jwt from "jsonwebtoken";
+import verifyAccessToken from "../../utils/verifyJWT";
 // create post into database
 const createPostIntoDb = async (post: TPost) => {
   const user = await UserModel.findById(post.author)
@@ -33,7 +31,7 @@ const getSinglePostFromDb = async (id: string) => {
 // update post
 const updateSinglePost = async (id: string, payload: TPost, token: string) => {
   // verify the user
-  const decoded = jwt.verify(token!, config.jwt_access_secret as string) as TJwtPayload
+  const decoded = verifyAccessToken(token)
 
   // check if the update request is from the author
   const postFromDb = await PostModel.findOne({ _id: id, isDeleted: false })
@@ -86,7 +84,7 @@ const deletePost = async (id: string, token: string) => {
   }
 
   // verify the user
-  const decoded = jwt.verify(token!, config.jwt_access_secret as string) as TJwtPayload
+  const decoded = verifyAccessToken(token)
 
   if (postFromDb?.author?.toString() !== decoded._id) {
     throw new AppError(httpStatus.FORBIDDEN, 'Forbidden')

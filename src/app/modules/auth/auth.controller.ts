@@ -45,22 +45,6 @@ const resetPassword = handleAsyncRequest(async (req, res) => {
     })
 })
 
-const getOwnProfile = handleAsyncRequest(async (req, res) => {
-    const authToken = req.headers.authorization
-    const token = authToken?.split('Bearer, ')[1]
-
-    const result = await authServices.getOwnProfile(token!)
-    successResponse((res), {
-        message: "Profile retrieved successfully!", data: result,
-    })
-})
-
-const updateProfile = handleAsyncRequest(async (req, res) => {
-    const result = await authServices.updateProfile(req.body)
-    successResponse((res), {
-        message: "Profile updated successfully!", data: result,
-    })
-})
 
 const getNewAccessToken = handleAsyncRequest(async (req, res) => {
     const authToken = req.headers.authorization
@@ -72,20 +56,11 @@ const getNewAccessToken = handleAsyncRequest(async (req, res) => {
     })
 })
 
-const getAllUsers = handleAsyncRequest(async (req, res) => {
-    const result = await authServices.getAllUsers()
-    successResponse((res), {
-        message: "All users retrieved successfully!", data: result,
-    })
-})
 
 export const authControllers = {
     createUser,
     loginUser,
     forgetPassword,
     resetPassword,
-    getOwnProfile,
-    updateProfile,
     getNewAccessToken,
-    getAllUsers
 }

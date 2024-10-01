@@ -1,9 +1,7 @@
 import { Router } from "express";
 import { authControllers } from "./auth.controller";
-import { ForgetPasswordValidationSchema, ResetPasswordValidationSchema, UserLoginValidationSchema, UserUpdateValidationSchema, UserValidationSchema } from "./auth.validation";
-import authGuard from "../../middlewares/authGuard";
+import { ForgetPasswordValidationSchema, ResetPasswordValidationSchema, UserLoginValidationSchema, UserValidationSchema } from "./auth.validation";
 import { handleZodValidation } from "../../middlewares/handleZodValidation";
-
 
 const router = Router()
 
@@ -23,19 +21,8 @@ router.post('/reset-password',
     handleZodValidation(ResetPasswordValidationSchema),
     authControllers.resetPassword)
 
-router.get('/profile',
-    authControllers.getOwnProfile)
-
-router.put('/update-profile',
-    authGuard(['admin', 'user']),
-    handleZodValidation(UserUpdateValidationSchema),
-    authControllers.updateProfile)
-
 router.get('/get-access-token',
     authControllers.getNewAccessToken)
 
-router.get('/',
-    authGuard(['admin']),
-    authControllers.getAllUsers)
 
 export const authRouter = router

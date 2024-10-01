@@ -6,7 +6,7 @@ import httpStatus from "http-status"
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import { sendEmail } from "../../utils/sendEmail"
-import { TJwtPayload } from "../../interface/global"
+import verifyAccessToken from "../../utils/verifyJWT"
 
 //  Creates a user in the database.
 const createUserIntoDb = async (payload: TUser) => {
@@ -89,7 +89,7 @@ const forgetPassword = async (payload: Pick<TUser, "email">) => {
 const resetPassword = async (payload: { newPassword: string }, token: string) => {
 
     // verify token
-    const decoded = jwt.verify(token!, config.jwt_access_secret as string) as TJwtPayload
+    const decoded = verifyAccessToken(token)
     const user = await UserModel.isUserExist(decoded.email) as TUser
     if (user.role !== decoded.role) {
         throw new AppError(httpStatus.FORBIDDEN, "Forbidden")
@@ -108,30 +108,13 @@ const resetPassword = async (payload: { newPassword: string }, token: string) =>
     }
 }
 
-// get own profile
-const getOwnProfile = async (token: string) => {
-    // verify token
-    const decoded = jwt.verify(token, config.jwt_access_secret as string) as TJwtPayload
-    const user = UserModel.isUserExist(decoded.email) as TUser
-
-    return user
-}
-
-// update profile
-const updateProfile = async (payload: Partial<TUser>) => {
-    const result = await UserModel.findByIdAndUpdate(payload._id, {
-        $set: { ...payload }
-    }, { new: true })
-
-    return result
-}
 
 
 // get new accessTOken
 const getNewAccessToken = async (token: string) => {
 
     // verify token
-    const decoded = jwt.verify(token, config.jwt_access_secret as string) as TJwtPayload
+    const decoded = verifyAccessToken(token)
     const user = await UserModel.isUserExist(decoded.email)
 
     if (!user) {
@@ -149,25 +132,14 @@ const getNewAccessToken = async (token: string) => {
         role: user.role
     }
     const accessToken = jwt.sign(jwtPayload, config.jwt_access_secret!, { expiresIn: config.jwt_access_expires_in });
-
-
     return { accessToken }
 }
 
-
-// get all  users
-const getAllUsers = async () => {
-    const users = await UserModel.find()
-    return users
-}
 
 export const authServices = {
     createUserIntoDb,
     loginUser,
     forgetPassword,
     resetPassword,
-    getOwnProfile,
-    updateProfile,
     getNewAccessToken,
-    getAllUsers
 }

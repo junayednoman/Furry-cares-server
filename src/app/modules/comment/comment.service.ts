@@ -84,7 +84,6 @@ const deleteComment = async (id: string, token: string) => {
   }
 }
 
-
 export const commentServices = {
   createCommentIntoDb,
   updateComment,
