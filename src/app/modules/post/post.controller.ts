@@ -5,7 +5,6 @@ import PostModel from "./post.model";
 import { postServices } from "./post.service";
 
 const createPost = handleAsyncRequest(async (req, res) => {
-  console.log('bodyData: ');
   const thumbnail = req?.file?.path || defaultImage
   const bodyData = req.body
   const postData = {

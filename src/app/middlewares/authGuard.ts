@@ -38,6 +38,8 @@ const authGuard = (allowedRules: TUserRole[]) => handleAsyncRequest(
     }
 
     const userId = req?.params?.userId
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     if (userId && user._id.toString() !== userId) {
       throw new AppError(httpStatus.FORBIDDEN, "Forbidden")
     }
