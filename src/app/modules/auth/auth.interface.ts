@@ -1,7 +1,6 @@
 import { Model, ObjectId } from "mongoose";
 
 export type TUser = {
-  _id: string;
   name: string;
   email: string;
   password: string;
@@ -10,12 +9,14 @@ export type TUser = {
   profilePicture?: string;
   role: 'user' | 'admin';
   followers: ObjectId[];
-  following: ObjectId[];
-  createdAt: Date;
-  updatedAt: Date;
-  isDeleted: boolean;
+  followerCount?: number;
+  following?: ObjectId[];
+  createdAt?: Date;
+  updatedAt?: Date;
+  isDeleted?: boolean;
   passwordChangedAt?: Date;
   passResetToken?: string
+  isVerified?: boolean
 }
 
 export type TUserRole = 'user' | 'admin'

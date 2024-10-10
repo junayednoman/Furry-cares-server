@@ -1,18 +1,18 @@
-import { AppError } from "../../error/appError";
+import { defaultImage } from "../../constant";
 import handleAsyncRequest from "../../utils/handleAsyncRequest";
 import { successResponse } from "../../utils/successResponse";
 import PostModel from "./post.model";
 import { postServices } from "./post.service";
 
 const createPost = handleAsyncRequest(async (req, res) => {
-  if (!req.file) {
-    throw new AppError(400, "Please upload a thumbnail")
-  }
+  console.log('bodyData: ');
+  const thumbnail = req?.file?.path || defaultImage
   const bodyData = req.body
   const postData = {
-    thumbnail: req?.file?.path,
+    thumbnail,
     ...bodyData
   }
+
 
   const result = await postServices.createPostIntoDb(postData)
   successResponse((res), {
@@ -74,7 +74,7 @@ const deletePost = handleAsyncRequest(async (req, res) => {
 })
 
 const getPostByUser = handleAsyncRequest(async (req, res) => {
-  const result = await postServices.getPostByUser(req.params.userId)
+  const result = await postServices.getPostByUser(req.params.userId, req.query)
   successResponse((res), {
     message: "Post retrieved successfully!", data: result,
   })
@@ -87,7 +87,7 @@ const updatePostPublishStatus = handleAsyncRequest(async (req, res) => {
   const result = await postServices.updatePostPublishStatus(req.params.id, isPublished, token!)
 
   successResponse((res), {
-    message: `Post ${isPublished ? 'published' : 'unpublished'} successfully!`, data: result,
+    message: `Post ${isPublished ? 'published' : 'drafted'} successfully!`, data: result,
   })
 })
 

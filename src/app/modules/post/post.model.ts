@@ -1,13 +1,15 @@
 import { model, Schema, Types } from "mongoose";
 import { TPost } from "./post.interface";
+import { defaultImage } from "../../constant";
 
 const PostSchema = new Schema({
   author: { type: Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
-  content: { type: String, required: true },
-  thumbnail: { type: String, required: true },
+  content: { type: String, },
+  excerpt: { type: String, },
+  thumbnail: { type: String, default: defaultImage },
   category: { type: String, enum: ['tip', 'story'], required: true },
-  tags: [{ type: String, required: true }],
+  tags: [{ type: String, }],
   isPremium: { type: Boolean, default: false },
   votes: { type: Number, default: 0 },
   comments: [{ type: Types.ObjectId, ref: 'Comment' }],

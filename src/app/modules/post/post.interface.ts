@@ -5,6 +5,7 @@ export type TPost = {
   title: string;
   content: string;
   thumbnail: string;
+  excerpt?: string;
   category: 'tip' | 'story';
   tags: string[]
   isPremium?: boolean;

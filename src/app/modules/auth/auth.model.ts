@@ -16,11 +16,13 @@ const userSchema = new Schema<TUser, TUserModel>(
         profilePicture: { type: String, default: defaultProfileImage },
         role: { type: String, enum: ['user', 'admin'], default: 'user' },
         followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+        followerCount: { type: Number, default: 0 },
         following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
         createdAt: { type: Date, },
         updatedAt: { type: Date, },
         isDeleted: { type: Boolean, default: false },
         passResetToken: { type: String },
+        isVerified: { type: Boolean, default: false },
     },
     { timestamps: true }
 )

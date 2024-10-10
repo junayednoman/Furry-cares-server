@@ -11,7 +11,7 @@ class QueryBuilder<T> {
 
   search(searchAbleFields: string[]) {
     const searchTerm = this?.query?.searchTerm;
-    if (this.query.searchTerm) {
+    if (searchTerm) {
       this.queryModel = this.queryModel.find({
         $or: searchAbleFields.map((field: string) => (
           {
@@ -26,8 +26,9 @@ class QueryBuilder<T> {
     return this
   }
 
-  filter(excludeFields: string[]) {
+  filter() {
     const queryObject = { ...this.query }
+    const excludeFields = ['searchTerm', 'sort', 'limit', 'page', 'fields', 'skip', "daysBefore"]
     excludeFields.forEach((field) => delete queryObject[field])
 
     this.queryModel = this.queryModel.find(queryObject)
@@ -35,7 +36,7 @@ class QueryBuilder<T> {
   }
 
   sort() {
-    let sort = 'createdAt'
+    let sort = '-createdAt'
     if (this?.query?.sort) {
       sort = this?.query?.sort as string
     }
@@ -59,6 +60,25 @@ class QueryBuilder<T> {
     return this
   }
 
+  filterByPostedTime = () => {
+    const daysBefore = this?.query?.daysBefore;
+
+    if (daysBefore) {
+      const dateBefore = new Date(Date.now() - 86400000 * daysBefore).toISOString()
+      this.queryModel = this.queryModel.find({ createdAt: { $gt: dateBefore } })
+    }
+
+    return this
+  }
+
+  async countTotal() {
+    const totalQueries = this.queryModel.getFilter();
+    const total = await this.queryModel.model.countDocuments(totalQueries);
+
+    return {
+      total,
+    };
+  }
 
 }
 

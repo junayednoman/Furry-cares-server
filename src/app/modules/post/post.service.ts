@@ -8,7 +8,7 @@ import { verifyAuthority } from "../../utils/verifyAuthority";
 import QueryBuilder from "../../builder/QueryBuilder";
 
 const searchableFields = ['title', 'description', 'tags',]
-const excludeFieldsForFiltering = ['searchTerm', 'sort', 'limit', 'page', 'fields']
+
 // create post into database
 const createPostIntoDb = async (post: TPost) => {
   const user = await UserModel.findById(post.author)
@@ -20,21 +20,26 @@ const createPostIntoDb = async (post: TPost) => {
 };
 
 const getAllPostFromDb = async (query: Record<string, unknown>) => {
-  const postQuery = new QueryBuilder(PostModel.find().populate(['author', 'comments']), query)
+  const postQuery = new QueryBuilder(PostModel.find({ isDeleted: false }).populate(['author', 'comments']), query)
     .search(searchableFields)
-    .filter(excludeFieldsForFiltering)
+    .filter()
     .sort()
     .paginate()
     .selectFields()
+    .filterByPostedTime();
 
+  const meta = await postQuery.countTotal();
   const result = await postQuery.queryModel
-  return result
+  return { result, meta }
 }
 
 const getSinglePostFromDb = async (id: string) => {
   const postFromDb = await PostModel.findById(id).populate('author')
   if (!postFromDb) {
     throw new AppError(httpStatus.NOT_FOUND, 'Invalid post ID')
+  }
+  if (postFromDb.isDeleted) {
+    throw new AppError(httpStatus.MOVED_PERMANENTLY, 'Post is deleted')
   }
   return postFromDb
 }
@@ -105,13 +110,23 @@ const deletePost = async (id: string, token: string) => {
 }
 
 // get user specific post
-const getPostByUser = async (userId: string) => {
+const getPostByUser = async (userId: string, query: Record<string, unknown>) => {
   const user = await UserModel.findById(userId)
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'Invalid user ID')
   }
-  const postsFromDb = await PostModel.find({ author: userId, isDeleted: false })
-  return postsFromDb
+
+  const postQuery = new QueryBuilder(PostModel.find({ author: userId, isDeleted: false }), query)
+    .search(searchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .selectFields()
+    .filterByPostedTime();
+
+  const meta = await postQuery.countTotal();
+  const result = await postQuery.queryModel
+  return { result, meta }
 }
 
 

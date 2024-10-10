@@ -20,7 +20,7 @@ const createUserIntoDb = async (payload: TUser) => {
         _id: newUser._id,
         name: newUser.name,
         email: newUser.email,
-        role: newUser.role
+        role: newUser.role,
     }
     const accessToken = jwt.sign(jwtPayload, config.jwt_access_secret!, { expiresIn: config.jwt_access_expires_in });
     const refreshToken = jwt.sign(jwtPayload, config.jwt_refresh_secret!, { expiresIn: config.jwt_refresh_expires_in });
@@ -31,7 +31,7 @@ const createUserIntoDb = async (payload: TUser) => {
 }
 
 const loginUser = async (payload: Pick<TUser, "email" | "password" | "isDeleted">) => {
-    const user = await UserModel.isUserExist(payload.email) as TUser;
+    const user = await UserModel.isUserExist(payload.email) as TUser & { _id: string };
 
     // check if password match
     const isPasswordMatch = await bcrypt.compare(
@@ -43,7 +43,7 @@ const loginUser = async (payload: Pick<TUser, "email" | "password" | "isDeleted"
     }
 
     const jwtPayload = {
-        _id: user._id as string,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role
@@ -59,7 +59,7 @@ const loginUser = async (payload: Pick<TUser, "email" | "password" | "isDeleted"
 
 // forget password
 const forgetPassword = async (payload: Pick<TUser, "email">) => {
-    const user = await UserModel.isUserExist(payload.email) as TUser;
+    const user = await UserModel.isUserExist(payload.email) as TUser & { _id: string };
 
     // generate token
     const jwtPayload = {
@@ -115,7 +115,7 @@ const getNewAccessToken = async (token: string) => {
 
     // verify token
     const decoded = verifyAccessToken(token)
-    const user = await UserModel.isUserExist(decoded.email)
+    const user = await UserModel.isUserExist(decoded.email) as TUser & { _id: string }
 
     if (!user) {
         throw new AppError(httpStatus.NOT_FOUND, "User not found!")

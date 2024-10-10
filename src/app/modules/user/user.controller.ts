@@ -1,11 +1,21 @@
 import handleAsyncRequest from "../../utils/handleAsyncRequest"
 import { successResponse } from "../../utils/successResponse"
 import { userService } from "./user.service"
+import { TBodyReqFiles } from "../../types"
+import verifyAccessToken from "../../utils/verifyJWT"
+import { UserModel } from "../auth/auth.model"
 
 const getAllUsers = handleAsyncRequest(async (req, res) => {
-  const result = await userService.getAllUsers()
+  const result = await userService.getAllUsers(req.query)
   successResponse((res), {
     message: "All users retrieved successfully!", data: result,
+  })
+})
+
+const getSingleUser = handleAsyncRequest(async (req, res) => {
+  const result = await userService.getSingleUser(req.params.userId)
+  successResponse((res), {
+    message: "User retrieved successfully!", data: result,
   })
 })
 
@@ -22,10 +32,37 @@ const getOwnProfile = handleAsyncRequest(async (req, res) => {
 const updateProfile = handleAsyncRequest(async (req, res) => {
   const authToken = req.headers.authorization
   const token = authToken?.split('Bearer, ')[1]
+  const decoded = verifyAccessToken(token!)
 
-  const result = await userService.updateProfile(req.body, token!)
+  const oldProfile = await UserModel.findById(decoded._id)
+  let profilePicture = oldProfile?.profilePicture
+  let coverPhoto = oldProfile?.coverPhoto
+
+  const files = req?.files as TBodyReqFiles
+  if (files?.profilePicture) {
+    profilePicture = files?.profilePicture[0]?.path;
+  }
+  if (files?.coverPhoto) {
+    coverPhoto = files?.coverPhoto[0]?.path
+  }
+
+  const bodyData = req.body
+  const postData = {
+    profilePicture,
+    coverPhoto,
+    ...bodyData
+  }
+
+  const result = await userService.updateProfile(postData, decoded)
   successResponse((res), {
     message: "Profile updated successfully!", data: result,
+  })
+})
+
+const changeUserRole = handleAsyncRequest(async (req, res) => {
+  const result = await userService.changeUserRole(req.body.userId)
+  successResponse((res), {
+    message: "User role updated successfully!", data: result,
   })
 })
 
@@ -47,10 +84,20 @@ const unFollowingUser = handleAsyncRequest(async (req, res) => {
   })
 })
 
+const deleteUser = handleAsyncRequest(async (req, res) => {
+  const result = await userService.deleteUser(req.params.userDeleteId)
+  successResponse((res), {
+    message: "User status updated successfully!", data: result,
+  })
+})
+
 export const userController = {
   getAllUsers,
   getOwnProfile,
   updateProfile,
   followingUser,
-  unFollowingUser
+  unFollowingUser,
+  getSingleUser,
+  changeUserRole,
+  deleteUser
 }

@@ -24,6 +24,10 @@ export const ForgetPasswordValidationSchema = z.object({
   email: z.string({ required_error: "Email is required" }).email("Invalid email format"),
 });
 
+export const userIdValidationSchema = z.object({
+  userId: z.string({ required_error: "User ID is required" }),
+});
+
 export const ResetPasswordValidationSchema = z.object({
   email: z.string({ required_error: "Email is required" }).email("Invalid email format"),
   newPassword: z.string({ required_error: "Password is required" }),
