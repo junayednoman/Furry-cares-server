@@ -6,7 +6,7 @@ import PostModel from "./post.model";
 import verifyAccessToken from "../../utils/verifyJWT";
 import { verifyAuthority } from "../../utils/verifyAuthority";
 import QueryBuilder from "../../builder/QueryBuilder";
-import mongoose, { ObjectId } from "mongoose";
+import { ObjectId } from "mongoose";
 
 const searchableFields = ['title', 'description', 'tags',]
 
@@ -85,44 +85,39 @@ const updatePostVote = async (postId: string, userId: string, voteType: 'up' | '
     throw new AppError(httpStatus.NOT_FOUND, 'Invalid post ID')
   }
 
+  let updateDoc = {}
   if (voteType === 'up') {
+    let votes = post.votes + 1;
+    updateDoc = { $push: { upVotes: user._id }, votes }
     if (post.upVotes.includes(user._id as unknown as ObjectId)) {
-      throw new AppError(httpStatus.CONFLICT, 'Already upvoted')
+      votes = post.votes - 1
+      updateDoc = { $pull: { upVotes: user._id }, votes }
+    }
+    if (post.downVotes.includes(user._id as unknown as ObjectId)) {
+      votes = post.votes + 2;
+      updateDoc = { $push: { upVotes: user._id }, $pull: { downVotes: user._id }, votes }
     }
   } else if (voteType === 'down') {
+    let votes = post.votes - 1;
+    updateDoc = { $push: { downVotes: user._id }, votes };
     if (post.downVotes.includes(user._id as unknown as ObjectId)) {
-      throw new AppError(httpStatus.CONFLICT, 'Already downvoted')
+      votes = post.votes + 1
+      updateDoc = { $pull: { downVotes: user._id }, votes };
+    }
+    if (post.upVotes.includes(user._id as unknown as ObjectId)) {
+      votes = post.votes - 2;
+      updateDoc = { $push: { downVotes: user._id }, $pull: { upVotes: user._id }, votes };
     }
   }
 
-  const session = await mongoose.startSession()
-  try {
-    session.startTransaction()
+  const result = await PostModel.findOneAndUpdate(
+    { _id: postId, isDeleted: false },
+    updateDoc,
+    { new: true }
+  )
 
-    let result
-    if (voteType === 'up') {
-      result = await PostModel.findOneAndUpdate(
-        { _id: postId, isDeleted: false },
-        { $push: { upVotes: user._id }, $pull: { downVotes: user._id }, votes: post.votes + 1 },
-        { session, new: true }
-      )
-    } else if (voteType === 'down') {
-      result = await PostModel.findOneAndUpdate(
-        { _id: postId, isDeleted: false },
-        { $push: { downVotes: user._id }, $pull: { upVotes: user._id }, votes: post.votes - 1 },
-        { session, new: true }
-      )
-    }
+  return result
 
-    await session.commitTransaction()
-    return result
-
-  } catch (error: any) {
-    session.abortTransaction()
-    throw new Error(error?.message || 'Unable to update the post!')
-  } finally {
-    session.endSession()
-  }
 }
 // delete post
 const deletePost = async (id: string, token: string) => {
