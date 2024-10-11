@@ -57,7 +57,10 @@ const updateSinglePost = handleAsyncRequest(async (req, res) => {
 })
 
 const updatePostVote = handleAsyncRequest(async (req, res) => {
-  const result = await postServices.updatePostVote(req.params.id, req.body.vote)
+  const postId = req.body.postId
+  const userId = req.body.userId
+  const type = req.body.voteType
+  const result = await postServices.updatePostVote(postId, userId, type)
   successResponse((res), {
     message: "Post vote updated successfully!", data: result,
   })

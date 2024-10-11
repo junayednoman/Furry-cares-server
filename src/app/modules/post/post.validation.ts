@@ -50,9 +50,10 @@ export const ImageFileZodSchema = z.object({
   }).optional()
 });
 
-
 export const voteValidationSchema = z.object({
-  vote: z.enum(['upvote', 'downvote'], { required_error: 'Vote is required' }),
+  postId: z.string({ required_error: 'Post ID is required' }),
+  userId: z.string({ required_error: 'User ID is required' }),
+  voteType: z.enum(['up', 'down'], { required_error: 'Vote type is required' })
 })
 
 export const updatePostPublishStatus = z.object({

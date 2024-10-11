@@ -30,7 +30,7 @@ router.put('/:id',
   handleZodValidation(postUpdateValidationSchema),
   postControllers.updateSinglePost)
 
-router.patch('/vote/:id',
+router.patch('/vote',
   handleZodValidation(voteValidationSchema),
   postControllers.updatePostVote)
 

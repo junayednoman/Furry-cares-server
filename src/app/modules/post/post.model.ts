@@ -12,6 +12,8 @@ const PostSchema = new Schema({
   tags: [{ type: String, }],
   isPremium: { type: Boolean, default: false },
   votes: { type: Number, default: 0 },
+  upVotes: [{ type: Types.ObjectId, ref: 'User' }],
+  downVotes: [{ type: Types.ObjectId, ref: 'User' }],
   comments: [{ type: Types.ObjectId, ref: 'Comment' }],
   isDeleted: { type: Boolean, default: false },
   isPublished: { type: Boolean, default: true },

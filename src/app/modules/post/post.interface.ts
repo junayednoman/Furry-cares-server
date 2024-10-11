@@ -9,7 +9,9 @@ export type TPost = {
   category: 'tip' | 'story';
   tags: string[]
   isPremium?: boolean;
-  votes?: number;
+  votes: number;
+  upVotes: ObjectId[];
+  downVotes: ObjectId[];
   comments?: ObjectId[];
   createdAt?: Date;
   updatedAt?: Date;
