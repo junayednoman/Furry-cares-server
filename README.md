@@ -1,42 +1,38 @@
-# Furry Cares 🐾
+# Furry Cares Backend 🐾
 
-Welcome to the **Furry Cares** frontend repository! This project is the client-side part of a full-stack web application that allows pet owners to access valuable tips and stories about pet care. Users can browse, create, and manage content, with features tailored to both regular users and admins.
-
-[Live Link](https://furry-cares.vercel.app/)
+Welcome to the **Furry Cares** backend repository! This project serves as the server-side part of the web application that provides APIs for user authentication, content management, and premium monetization for pet care tips and stories.
 
 ## Features ✨
 
-- **User Authentication**: Secure login, registration, and token-based authentication (JWT).
-- **Roles and Permissions**: Role-based access with different permissions for Users and Admins.
-- **Rich Content Editor**: Use Jodit React for creating and editing posts with embedded images and formatted text.
-- **Premium Content**: Users can create and access premium content, which requires payment to unlock.
-- **Interactive UI**: Features like upvoting, commenting, and following other users for enhanced community interaction.
-- **Search and Filter**: Advanced search with debouncing and filtering to easily find content.
-- **Responsive Design**: Fully responsive, with a smooth user experience across all devices.
-
+- **User Authentication**: JWT-based authentication with secure login, registration, and token expiration.
+- **Roles and Permissions**: Role-based access control for Users and Admins.
+- **Content Management**: APIs for creating, updating, deleting, and fetching posts (Tips & Stories).
+- **Premium Content Monetization**: Integration with payment gateways (Aamarpay, Stripe) for premium content access.
+- **Commenting and Upvoting**: API endpoints for user interactions such as commenting and upvoting posts.
+- **Advanced Search**: Full-text search and filtering based on categories or keywords.
+- **Admin Controls**: API endpoints for managing users, posts, and premium subscriptions.
 
 ## Tech Stack 🛠️
 
-- **Next.js**: React framework for server-side rendering and static site generation.
-- **Redux**: State management for handling global states like user data and theme preferences.
-- **TypeScript**: Typed superset of JavaScript for better code quality.
-- **Tailwind CSS**: Utility-first CSS framework for building responsive designs quickly.
-- **Ant Design**: UI components library for consistent and polished UI.
-- **Jodit React**: Rich text editor for creating and editing content.
-- **TanStack Query**: Asynchronous state management, server-state utilities and data fetching for the web.
+- **Node.js**: JavaScript runtime for building the backend server.
+- **Express**: Fast, minimal web framework for handling routes and middleware.
+- **Mongoose**: MongoDB object modeling tool for managing database schemas and interactions.
+- **JWT (JSON Web Tokens)**: For user authentication and secure API access.
+- **Aamarpay**: Integrated payment gateways for handling transactions.
+- **Cloudinary**: For image uploads and management (if needed for posts).
 
 ## Getting Started 🚀
 
 ### Prerequisites
 
 - Node.js installed (v14 or later)
-- NPM or Yarn installed
+- MongoDB installed and running locally or using a cloud service like MongoDB Atlas
 
 ## Installation & Setup 🛠️
 
 1. Clone the repository:
     ```sh
-    https://github.com/junayednoman/Furry-cares-frontend
+    https://github.com/junayednoman/Furry-Cares-Backend
     ```
 
 2. Install dependencies:
