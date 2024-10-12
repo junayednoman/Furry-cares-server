@@ -16,7 +16,7 @@ const createComment = handleAsyncRequest(
 
 const updateComment = handleAsyncRequest(
   async (req, res) => {
-    const authToken = req.headers.authorization
+    const authToken = req.headers.authorization;
     const token = authToken?.split('Bearer, ')[1]
     const comment = req.body
     const commentId = req.params.id
@@ -39,9 +39,20 @@ const deleteComment = handleAsyncRequest(
   }
 )
 
+const getAllComments = handleAsyncRequest(
+  async (req, res) => {
+    const result = await commentServices.getAllComments(req.query)
+    successResponse((res), {
+      message: "Comments retrieved successfully!", data: result,
+    })
+  }
+)
+
+
 
 export const commentControllers = {
   createComment,
   updateComment,
-  deleteComment
+  deleteComment,
+  getAllComments
 }

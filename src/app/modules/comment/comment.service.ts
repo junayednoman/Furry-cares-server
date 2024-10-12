@@ -6,6 +6,7 @@ import { UserModel } from "../auth/auth.model";
 import PostModel from "../post/post.model";
 import mongoose from "mongoose";
 import { verifyAuthority } from "../../utils/verifyAuthority";
+import QueryBuilder from "../../builder/QueryBuilder";
 
 // create comment into database
 const createCommentIntoDb = async (comment: TComment, token: string) => {
@@ -40,6 +41,21 @@ const createCommentIntoDb = async (comment: TComment, token: string) => {
   }
 }
 
+
+// get all comments
+const getAllComments = async (query: Record<string, unknown>) => {
+  const commentQuery = new QueryBuilder(CommentModel.find().populate('commenter'), query)
+    .filter()
+    .sort()
+    .paginate()
+    .selectFields()
+    .filterByPostedTime();
+
+  const result = await commentQuery.queryModel;
+  const meta = await commentQuery.countTotal();
+  return { result, meta }
+}
+
 const updateComment = async (id: string, comment: TComment, token: string) => {
 
   // check if the update request is from the author
@@ -58,26 +74,25 @@ const updateComment = async (id: string, comment: TComment, token: string) => {
   return updatedComment
 }
 
-const deleteComment = async (id: string, token: string) => {
+const deleteComment = async (_id: string, token: string) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
     // check if the update request is from the author
-    const commentFromDb = await CommentModel.findOne({ _id: id });
+    const commentFromDb = await CommentModel.findOne({ _id });
     if (!commentFromDb) {
       throw new AppError(httpStatus.NOT_FOUND, 'Invalid comment ID')
     }
 
     verifyAuthority(commentFromDb?.commenter?.toString(), token)
 
-    const deleteComment = await CommentModel.findOneAndDelete({ _id: id }, { session })
+    await PostModel.findByIdAndUpdate(commentFromDb?.post, { $pull: { comments: _id } }, { new: true, session },);
+    const deleteComment = await CommentModel.findOneAndDelete({ _id }, { session })
 
-    await PostModel.findByIdAndUpdate(commentFromDb?.post, { $pull: { comments: commentFromDb?._id } }, { new: true, session },);
-
-    session.commitTransaction();
-    return deleteComment
+    await session.commitTransaction();
+    return deleteComment;
   } catch (error: any) {
-    session.abortTransaction();
+    await session.abortTransaction();
     throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, error.message || "Failed to delete comment")
   } finally {
     session.endSession();
@@ -87,5 +102,6 @@ const deleteComment = async (id: string, token: string) => {
 export const commentServices = {
   createCommentIntoDb,
   updateComment,
-  deleteComment
+  deleteComment,
+  getAllComments
 }
