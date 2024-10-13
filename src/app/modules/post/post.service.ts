@@ -8,7 +8,7 @@ import { verifyAuthority } from "../../utils/verifyAuthority";
 import QueryBuilder from "../../builder/QueryBuilder";
 import { ObjectId } from "mongoose";
 
-const searchableFields = ['title', 'content', 'tags',]
+const searchableFields = ['title', 'content', 'tags', 'excerpt']
 
 // create post into database
 const createPostIntoDb = async (post: TPost) => {
