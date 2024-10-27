@@ -4,7 +4,7 @@ export const sendEmail = async (to: string, subject: string, text: string, html?
 
   const transporter = nodemailer.createTransport({
     host: config.smtp_host,
-    port: 587,
+    port: 465,
     secure: config.node_env === "production", // true for port 465, false for other ports
     auth: {
       user: config.sender_email,
